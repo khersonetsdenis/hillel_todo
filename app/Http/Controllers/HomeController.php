@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class HomeController extends Controller
 {
@@ -23,13 +25,29 @@ class HomeController extends Controller
      */
     public function index()
     {
-        return view('pages.todo');
+    	$user = Auth::user();
+
+    	$todos = $user->todos()->get();
+        return view('pages.todo', compact('todos'));
     }
 
     public function store(Request $request)
     {
+		/**
+		 * @var User $user
+		 */
+		$user = Auth::user();
+
+		$user->todos()->create([
+			'title' => $request->title,
+			'description' => $request->description,
+			'dueto' => $request->dueto
+		]);
         return response()->json([
+
+
             'status' => 'success',
+			'todo' => $request->all()
         ]);
     }
 }

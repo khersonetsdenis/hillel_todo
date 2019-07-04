@@ -2,7 +2,13 @@
 
 @section('content')
     <p>Todo list</p>
-    <ul id="todo"></ul>
+    <ul id="todo">
+        @foreach($todos as $todo)
+        <li>
+            {{ $todo->title }} | {{ $todo->dueto }}
+        </li>
+        @endforeach
+    </ul>
     <hr/>
     <form>
         <div class="form-group">
