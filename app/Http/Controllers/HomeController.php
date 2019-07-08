@@ -2,114 +2,52 @@
 
 namespace App\Http\Controllers;
 
-use App\Book;
+use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Redirect;
+use Illuminate\Support\Facades\Auth;
 
-class BookController extends Controller
+class HomeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Create a new controller instance.
      *
-     * @return \Illuminate\Http\Response
+     * @return void
+     */
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
+    /**
+     * Show the application dashboard.
+     *
+     * @return \Illuminate\Contracts\Support\Renderable
      */
     public function index()
     {
-        $books = Book::all();
+    	$user = Auth::user();
 
-
-    	return view('pages.list', compact('books'));
+    	$todos = $user->todos()->get();
+        return view('pages.todo', compact('todos'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        return view('pages.create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
     public function store(Request $request)
     {
-        $this->validate($request, [
-        	'title' => 'required',
-			'author' => 'required',
-			'isbn' => 'required|unique:books'
+		/**
+		 * @var User $user
+		 */
+		$user = Auth::user();
+
+		$user->todos()->create([
+			'title' => $request->title,
+			'description' => $request->description,
+			'dueto' => $request->dueto
 		]);
-
-        $book = new Book();
-		/*$book->title = $request->title;
-		$book->author = $request->author;
-		$book->isbn = $request->isbn;*/
-		//$book->save();
+        return response()->json([
 
 
-		Book::create($request->all());
-		return redirect()->to('/books');
-    }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-    	$book = Book::findOrFail($id);
-        return view('pages.show', compact('book'));
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-		$book = Book::findOrFail($id);
-
-		//return view('pages.edit', compact('book'));
-		return view('pages.edit')->with('book', $book);
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request, $id)
-    {
-		$book = Book::find($id);
-		$book->title = $request->title;
-		$book->author = $request->author;
-		$book->isbn = $request->isbn;
-		$book->save();
-
-		return redirect()->to('/books');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-		$id = Book::where('id', $id)->first();
-		$id->delete();
-		return redirect('/books');
+            'status' => 'success',
+			'todo' => $request->all()
+        ]);
     }
 }
